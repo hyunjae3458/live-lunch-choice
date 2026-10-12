@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Local Markdown documents (except README) ###
+*.[mM][dD]
+![rR][eE][aA][dD][mM][eE].[mM][dD]

@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: live-lunch-choice
+  datasource:
+    url: jdbc:h2:mem:live_lunch_choice
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
