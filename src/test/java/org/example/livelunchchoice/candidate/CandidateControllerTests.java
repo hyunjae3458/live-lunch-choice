@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.example.livelunchchoice.vote.VoteRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -25,8 +26,12 @@ class CandidateControllerTests {
     @Autowired
     private CandidateRepository candidateRepository;
 
+    @Autowired
+    private VoteRepository voteRepository;
+
     @BeforeEach
     void clearTestDatabase() {
+        voteRepository.deleteAll();
         candidateRepository.deleteAll();
     }
 
@@ -76,7 +81,9 @@ class CandidateControllerTests {
         mockMvc.perform(post("/api/candidates")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.message").isString());
 
         assertThat(candidateRepository.count()).isZero();
     }

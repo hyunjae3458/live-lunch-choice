@@ -6,6 +6,9 @@ import org.example.livelunchchoice.candidate.dto.CandidateRequest;
 import org.example.livelunchchoice.candidate.dto.CandidateResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Sort;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.example.livelunchchoice.candidate.exception.DuplicateCandidateException;
+import org.example.livelunchchoice.common.error.UniqueConstraintViolation;
 
 import java.util.List;
 
@@ -24,10 +27,16 @@ public class CandidateService {
     @Transactional
     public CandidateResponse create(CandidateRequest request){
         if(candidateRepository.existsByName(request.name())){
-            throw new IllegalArgumentException("중복입니다.");
+            throw new DuplicateCandidateException();
         }
-        Candidate candidate = candidateRepository.save(new Candidate(request.name()));
-        CandidateResponse response = new CandidateResponse(candidate.getId(), candidate.getName());
-        return response;
+        try {
+            Candidate candidate = candidateRepository.saveAndFlush(new Candidate(request.name()));
+            return new CandidateResponse(candidate.getId(), candidate.getName());
+        } catch (DataIntegrityViolationException exception) {
+            if (UniqueConstraintViolation.matches(exception, "uk_candidate_name")) {
+                throw new DuplicateCandidateException();
+            }
+            throw exception;
+        }
     }
 }

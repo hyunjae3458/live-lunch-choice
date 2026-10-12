@@ -4,9 +4,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 @Entity
+@Table(uniqueConstraints = @UniqueConstraint(name = "uk_candidate_name", columnNames = "name"))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Candidate {
@@ -14,7 +14,7 @@ public class Candidate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
 
     public Candidate(String name){
