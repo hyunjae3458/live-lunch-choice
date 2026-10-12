@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -27,6 +28,28 @@ class CandidateControllerTests {
     @BeforeEach
     void clearTestDatabase() {
         candidateRepository.deleteAll();
+    }
+
+    @Test
+    void returnsEmptyListWhenNoCandidatesExist() throws Exception {
+        mockMvc.perform(get("/api/candidates"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
+    void returnsAllCandidatesInIdOrder() throws Exception {
+        var first = candidateRepository.save(new Candidate("한식"));
+        var second = candidateRepository.save(new Candidate("중식"));
+
+        mockMvc.perform(get("/api/candidates"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(first.getId()))
+                .andExpect(jsonPath("$[0].name").value("한식"))
+                .andExpect(jsonPath("$[1].id").value(second.getId()))
+                .andExpect(jsonPath("$[1].name").value("중식"));
     }
 
     @Test
