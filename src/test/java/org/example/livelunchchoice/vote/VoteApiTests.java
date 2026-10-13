@@ -13,6 +13,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.example.livelunchchoice.vote.event.VoteCreateEvent;
+import org.example.livelunchchoice.vote.messaging.VoteEventPublisher;
+import org.example.livelunchchoice.vote.dto.VoteRequest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.mockito.ArgumentCaptor;
 
 import java.util.List;
 import java.util.concurrent.CyclicBarrier;
@@ -22,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mockingDetails;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -34,6 +43,43 @@ class VoteApiTests {
     private VoteRepository votes;
     @MockitoSpyBean
     private CandidateRepository candidates;
+
+    @MockitoBean
+    private VoteEventPublisher publisher;
+    @Autowired
+    private VoteService voteService;
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+
+    @Test
+    void publishesOnlyAfterTransactionCommits() {
+        Candidate candidate = candidates.save(new Candidate("한식"));
+        TransactionTemplate transaction = new TransactionTemplate(transactionManager);
+        transaction.executeWithoutResult(status -> {
+            voteService.create(new VoteRequest("commit-user", candidate.getId()));
+            verifyNoInteractions(publisher);
+        });
+
+        ArgumentCaptor<VoteCreateEvent> event = ArgumentCaptor.forClass(VoteCreateEvent.class);
+        verify(publisher).publish(event.capture());
+        Vote saved = votes.findAll().get(0);
+        assertThat(event.getValue().eventId()).isNotBlank();
+        assertThat(event.getValue().voteId()).isEqualTo(saved.getId());
+        assertThat(event.getValue().candidateId()).isEqualTo(candidate.getId());
+    }
+
+    @Test
+    void rollbackDoesNotPublishEvent() {
+        Candidate candidate = candidates.save(new Candidate("한식"));
+        TransactionTemplate transaction = new TransactionTemplate(transactionManager);
+        transaction.executeWithoutResult(status -> {
+            voteService.create(new VoteRequest("rollback-user", candidate.getId()));
+            status.setRollbackOnly();
+        });
+
+        verifyNoInteractions(publisher);
+        assertThat(votes.count()).isZero();
+    }
 
     @BeforeEach
     void cleanDatabase() {

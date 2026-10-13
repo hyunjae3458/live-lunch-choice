@@ -1,35 +1,42 @@
 package org.example.livelunchchoice.vote;
 
 import lombok.RequiredArgsConstructor;
+import org.example.livelunchchoice.candidate.Candidate;
 import org.example.livelunchchoice.candidate.CandidateRepository;
 import org.example.livelunchchoice.candidate.exception.CandidateNotFoundException;
 import org.example.livelunchchoice.common.error.UniqueConstraintViolation;
+import org.example.livelunchchoice.vote.event.VoteCreateEvent;
 import org.example.livelunchchoice.vote.dto.VoteRequest;
 import org.example.livelunchchoice.vote.dto.VoteResponse;
 import org.example.livelunchchoice.vote.dto.VoteResultResponse;
 import org.example.livelunchchoice.vote.exception.AlreadyVotedException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class VoteService {
     private final VoteRepository voteRepository;
     private final CandidateRepository candidateRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public VoteResponse create(VoteRequest request) {
-        var candidate = candidateRepository.findById(request.candidateId())
+        Candidate candidate = candidateRepository.findById(request.candidateId())
                 .orElseThrow(CandidateNotFoundException::new);
         if (voteRepository.existsByUserId(request.userId())) {
             throw new AlreadyVotedException();
         }
+
+        Vote vote;
+
         try {
-            var vote = voteRepository.saveAndFlush(new Vote(request.userId(), candidate));
-            return new VoteResponse(vote.getId(), vote.getUserId(), candidate.getId(), vote.getCreatedAt());
+            vote = voteRepository.saveAndFlush(new Vote(request.userId(), candidate));
         } catch (DataIntegrityViolationException exception) {
             // 실패한 트랜잭션에서 추가 조회·재시도 없이 예외를 던져 롤백한다.
             if (UniqueConstraintViolation.matches(exception, "uk_vote_user_id")) {
@@ -37,6 +44,22 @@ public class VoteService {
             }
             throw exception;
         }
+
+        // 투표 이벤트 발행
+        VoteCreateEvent event = new VoteCreateEvent(
+                UUID.randomUUID().toString(),
+                vote.getId(),
+                candidate.getId(),
+                vote.getCreatedAt()
+        );
+        applicationEventPublisher.publishEvent(event);
+
+        return new VoteResponse(
+                vote.getId(),
+                vote.getUserId(),
+                candidate.getId(),
+                vote.getCreatedAt()
+        );
     }
 
     @Transactional(readOnly = true)
