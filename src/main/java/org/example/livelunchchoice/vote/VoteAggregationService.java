@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class VoteAggregationService {
     private final VoteRankingRedis voteRankingRedis;
 
-    public double aggregate(VoteCreateEvent event){
-        return voteRankingRedis.increment(event.candidateId());
+    public boolean aggregate(VoteCreateEvent event){
+        return voteRankingRedis.incrementIfNotProcessed(event.eventId(),event.candidateId());
     }
 }

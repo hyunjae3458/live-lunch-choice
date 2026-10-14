@@ -34,14 +34,23 @@ public class VoteEventConsumer {
                 record.offset()
         );
 
-        double score = aggregationService.aggregate(event);
+        boolean aggregated = aggregationService.aggregate(event);
+
+        if(!aggregated){
+            log.info(
+                    "VOTE_DUPLICATE_SKIPPED eventId={} voteId={} candidateId={}",
+                    event.eventId(),
+                    event.voteId(),
+                    event.candidateId()
+            );
+            return;
+        }
 
         log.info(
-                "VOTE_AGGREGATED eventId={} voteId={} candidateId={} score={}",
+                "VOTE_AGGREGATED eventId={} voteId={} candidateId={}",
                 event.eventId(),
                 event.voteId(),
-                event.candidateId(),
-                score
+                event.candidateId()
         );
     }
 }
