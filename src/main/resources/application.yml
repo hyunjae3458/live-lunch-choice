@@ -1,17 +1,20 @@
 spring:
+  config:
+    import: optional:file:./.env[.properties]
   application:
     name: live-lunch-choice
   datasource:
-    url: jdbc:h2:mem:live_lunch_choice
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-  h2:
-    console:
-      enabled: true
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   kafka:
     bootstrap-servers: localhost:9092
 
