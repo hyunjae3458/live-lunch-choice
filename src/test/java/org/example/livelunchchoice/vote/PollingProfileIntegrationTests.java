@@ -55,6 +55,12 @@ class PollingProfileIntegrationTests {
 
     @Test
     void dbHttpWorksWithoutKafkaRedisAndRealtimeApisAreAbsent() throws Exception {
+        assertThat(request("GET", "/api/mode", "").body()).isEqualTo("{\"mode\":\"polling\"}");
+        HttpResponse<String> page = request("GET", "/", "");
+        assertThat(page.statusCode()).isEqualTo(200);
+        assertThat(page.body()).contains("id=\"vote-form\"", "src=\"/app.js\"");
+        assertThat(request("GET", "/app.js", "").statusCode()).isEqualTo(200);
+        assertThat(request("GET", "/styles.css", "").statusCode()).isEqualTo(200);
         for (Class<?> type : new Class<?>[]{VoteRealtimeService.class, VoteRankingController.class,
                 VoteRankingSseService.class, VoteRankingRedis.class, VoteRankingPublisher.class,
                 VoteRankingSubscriber.class, VoteRankingRedisConfig.class, VotedCreatedEventListener.class,

@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: ${APP_PROFILE:realtime}
   config:
     import: optional:file:./.env[.properties]
   application:

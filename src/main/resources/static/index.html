@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7f2">
+  <title>오늘의 점심 · Lunch choice</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#vote-form">투표로 바로 가기</a>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="오늘의 점심 홈"><span class="brand-mark" aria-hidden="true">L.</span> lunch choice<span class="brand-dot" aria-hidden="true"> / </span><span class="brand-caption">오늘의 점심</span></a>
+    <span class="header-note">함께 고르는 한 끼</span>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">A LITTLE CHOICE, A BETTER LUNCH</p>
+      <h1 id="page-title">오늘 점심,<br>무엇을 먹을까요?</h1>
+      <p class="intro-copy">먹고 싶은 메뉴에 한 표.<br class="mobile-break"> 우리의 점심을 함께 정해요.</p>
+      <div class="connection-bar"><span id="connection" role="status">연결 중 · 서버를 확인하고 있어요</span><span id="mode-label" class="mode-label">모드 확인 중</span></div>
+      <button id="retry" type="button" class="text-button" hidden>화면 다시 불러오기</button>
+    </section>
+
+    <div class="workspace">
+      <section class="panel vote-panel" aria-labelledby="vote-title">
+        <div class="section-heading"><div><p class="step-label">01 / YOUR CHOICE</p><h2 id="vote-title">마음이 가는 메뉴는?</h2></div><span id="candidate-count" class="small-tag">후보 확인 중</span></div>
+        <form id="vote-form">
+          <fieldset id="choices" disabled><legend class="sr-only">투표할 후보 한 개 선택</legend><div id="candidates" class="candidate-grid"></div></fieldset>
+          <p id="candidate-state" class="empty-note" role="status">후보 목록을 불러오고 있어요.</p>
+          <div class="identity"><label for="user-id">테스트용 사용자 ID</label><input id="user-id" name="userId" type="text" maxlength="255" required autocomplete="off" placeholder="예: lunch-tester-01" aria-describedby="identity-help"><p id="identity-help" class="help">로그인이 아닌 실험용 ID예요. 같은 ID로는 한 번만 투표할 수 있어요.</p></div>
+          <button id="vote-button" class="primary-button" type="submit" disabled><span id="vote-button-text">메뉴를 선택해 주세요</span><span aria-hidden="true">↗</span></button>
+          <p id="vote-message" class="feedback" role="status" aria-live="polite" aria-atomic="true">메뉴와 사용자 ID를 입력한 뒤 투표해 주세요.</p>
+        </form>
+      </section>
+
+      <section class="panel ranking-panel" aria-labelledby="ranking-title">
+        <div class="section-heading"><div><p class="step-label">02 / OUR FAVORITES</p><h2 id="ranking-title">지금, 우리의 선택</h2></div><span class="small-tag">득표순</span></div>
+        <div class="total"><span>집계된 투표</span><p><strong id="total-votes">—</strong><span>표</span></p></div>
+        <p id="ranking-state" class="empty-note" role="status">랭킹을 불러오고 있어요.</p>
+        <ol id="rankings" class="ranking-list" aria-label="득표순 후보 랭킹"></ol>
+        <div class="ranking-footer"><span>마지막 갱신</span><time id="updated-at">아직 갱신되지 않았어요</time></div>
+        <p id="update-help" class="help">서버의 집계 결과를 보여드려요.</p>
+      </section>
+    </div>
+    <footer class="site-footer"><span>작은 선택이 모여, 오늘의 점심이 됩니다.</span><span>LUNCH CHOICE</span></footer>
+  </main>
+  <noscript><p class="noscript">투표와 랭킹을 사용하려면 브라우저의 JavaScript를 켜 주세요.</p></noscript>
+</body>
+</html>

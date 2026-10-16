@@ -71,6 +71,8 @@ class VoteRankingSseIntegrationTests {
 
     @Test
     void realHttpVoteKafkaRedisPubSubAndTwoSseConnections() throws Exception {
+        assertThat(get("/api/mode").body()).isEqualTo("{\"mode\":\"realtime\"}");
+        assertThat(get("/").body()).contains("id=\"vote-form\"");
         // isListening is set only after the subscription acknowledgement has arrived.
         await().atMost(Duration.ofSeconds(15)).until(rankingListenerContainer::isListening);
         assertThat(get("/api/votes/rankings").body()).isEqualTo("[]");
