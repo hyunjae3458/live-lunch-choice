@@ -25,7 +25,18 @@
 
     <div class="workspace">
       <section class="panel vote-panel" aria-labelledby="vote-title">
-        <div class="section-heading"><div><p class="step-label">01 / YOUR CHOICE</p><h2 id="vote-title">마음이 가는 메뉴는?</h2></div><span id="candidate-count" class="small-tag">후보 확인 중</span></div>
+        <div class="section-heading"><div><p class="step-label">01 / YOUR CHOICE</p><h2 id="vote-title">마음이 가는 메뉴는?</h2></div><div class="candidate-actions"><span id="candidate-count" class="small-tag">후보 확인 중</span><button id="candidate-toggle" class="candidate-toggle" type="button" aria-expanded="false" aria-controls="candidate-add-panel">+ 후보 추가</button></div></div>
+        <div id="candidate-add-panel" class="candidate-add" hidden>
+          <form id="candidate-form">
+            <label for="candidate-name">새 후보 이름</label>
+            <div class="candidate-add-fields">
+              <input id="candidate-name" name="name" type="text" maxlength="255" required autocomplete="off" placeholder="추가할 메뉴를 입력하세요" aria-describedby="candidate-help" disabled>
+              <button id="candidate-add-button" type="submit" disabled>후보 추가</button>
+            </div>
+            <p id="candidate-help" class="help">추가한 후보는 바로 선택할 수 있어요. 다른 화면에서는 새로고침해 주세요.</p>
+            <p id="candidate-message" class="feedback" role="status" aria-live="polite" aria-atomic="true"></p>
+          </form>
+        </div>
         <form id="vote-form">
           <fieldset id="choices" disabled><legend class="sr-only">투표할 후보 한 개 선택</legend><div id="candidates" class="candidate-grid"></div></fieldset>
           <p id="candidate-state" class="empty-note" role="status">후보 목록을 불러오고 있어요.</p>

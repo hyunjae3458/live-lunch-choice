@@ -568,3 +568,65 @@ fieldset {
     flex-wrap:wrap;
   }
 }
+
+/* 후보 등록은 투표 폼과 분리해 Enter 입력이 투표로 이어지지 않게 한다. */
+.candidate-add {
+  margin-bottom: 22px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+}
+.candidate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+.vote-panel .section-heading {
+  flex-wrap: wrap;
+}
+.candidate-toggle {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft);
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+.candidate-add label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.candidate-add-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.candidate-add-fields input {
+  flex: 1 1 170px;
+  min-width: 0;
+  min-height: 46px;
+  border: 1px solid #cbd5cd;
+  border-radius: 9px;
+  padding: 10px 12px;
+  color: var(--ink);
+  background: white;
+}
+.candidate-add-fields button {
+  min-height: 46px;
+  border: 1px solid var(--accent);
+  border-radius: 9px;
+  padding: 10px 15px;
+  color: var(--accent);
+  background: var(--soft);
+}
+.candidate-add-fields button:disabled {
+  color: var(--muted);
+  border-color: var(--line);
+}

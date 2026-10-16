@@ -3,7 +3,9 @@ const POLLING_INTERVAL_MS = 2000;
 const REQUEST_TIMEOUT_MS = 10000;
 const ui = Object.fromEntries(['connection', 'mode-label', 'retry', 'choices', 'candidates',
   'candidate-state', 'candidate-count', 'user-id', 'vote-form', 'vote-button', 'vote-button-text',
-  'vote-message', 'rankings', 'ranking-state', 'total-votes', 'updated-at', 'update-help']
+  'vote-message', 'rankings', 'ranking-state', 'total-votes', 'updated-at', 'update-help',
+  'candidate-form', 'candidate-name', 'candidate-add-button', 'candidate-message',
+  'candidate-toggle', 'candidate-add-panel']
   .map(id => [id, document.getElementById(id)]));
 let candidates = [];
 let snapshot = null;
@@ -13,6 +15,7 @@ let source;
 let pollingTimer;
 let stopped = false;
 let refreshingCandidates = false;
+let addingCandidate = false;
 const number = new Intl.NumberFormat('ko-KR');
 
 function connection(text, state) {
@@ -69,7 +72,7 @@ function renderCandidates() {
   ui.candidates.replaceChildren(fragment);
   ui.choices.disabled = sending || candidates.length === 0;
   ui['candidate-count'].textContent = `후보 ${number.format(candidates.length)}개`;
-  ui['candidate-state'].textContent = candidates.length ? '' : '아직 등록된 후보가 없어요. 후보가 등록되면 화면을 다시 불러와 주세요.';
+  ui['candidate-state'].textContent = candidates.length ? '' : '아직 등록된 후보가 없어요. 후보 추가 버튼으로 첫 메뉴를 추가해 주세요.';
   ui['candidate-state'].hidden = candidates.length > 0;
   updateButton();
 }
@@ -122,7 +125,7 @@ async function refreshCandidates() {
   if (refreshingCandidates || stopped) return;
   refreshingCandidates = true;
   try {
-    candidates = await request('/api/candidates');
+    mergeCandidates(await request('/api/candidates'));
     renderCandidates();
     renderRanking();
   } catch {
@@ -133,6 +136,74 @@ async function refreshCandidates() {
     refreshingCandidates = false;
   }
 }
+
+function mergeCandidates(incoming) {
+  // 후보는 현재 추가만 가능하다. 늦게 도착한 조회 응답이 방금 등록한 후보를 지우지 않게 합친다.
+  const byId = new Map(candidates.map(candidate => [candidate.id, candidate]));
+  incoming.forEach(candidate => byId.set(candidate.id, candidate));
+  candidates = [...byId.values()].sort((first, second) => first.id - second.id);
+}
+
+function toggleCandidatePanel(open) {
+  ui['candidate-add-panel'].hidden = !open;
+  ui['candidate-toggle'].setAttribute('aria-expanded', String(open));
+  ui['candidate-toggle'].textContent = open ? '닫기' : '+ 후보 추가';
+  if (open && !ui['candidate-name'].disabled) ui['candidate-name'].focus();
+  if (!open) ui['candidate-toggle'].focus();
+}
+
+ui['candidate-toggle'].addEventListener('click', () => toggleCandidatePanel(ui['candidate-add-panel'].hidden));
+ui['candidate-add-panel'].addEventListener('keydown', event => {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    toggleCandidatePanel(false);
+  }
+});
+
+ui['candidate-form'].addEventListener('submit', async event => {
+  event.preventDefault();
+  if (addingCandidate || ui['candidate-name'].disabled || !ui['candidate-form'].reportValidity()) return;
+  const name = ui['candidate-name'].value.trim();
+  const message = ui['candidate-message'];
+  if (!name) {
+    message.dataset.state = 'error';
+    message.textContent = '공백만 입력할 수 없어요. 메뉴 이름을 입력해 주세요.';
+    ui['candidate-name'].focus();
+    return;
+  }
+  addingCandidate = true;
+  ui['candidate-name'].disabled = true;
+  ui['candidate-add-button'].disabled = true;
+  ui['candidate-add-button'].textContent = '추가 중…';
+  ui['candidate-form'].setAttribute('aria-busy', 'true');
+  message.dataset.state = 'sending';
+  message.textContent = '후보를 추가하고 있어요.';
+  try {
+    const candidate = await request('/api/candidates', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name })
+    });
+    // 저장된 ID와 정규화된 이름만 반영. 기존 선택과 득표 스냅샷은 유지한다.
+    mergeCandidates([candidate]);
+    renderCandidates();
+    renderRanking();
+    ui['candidate-name'].value = '';
+    message.dataset.state = 'success';
+    message.textContent = `“${candidate.name}” 후보를 추가했어요. 위 목록에서 선택해 투표해 주세요.`;
+  } catch (error) {
+    message.dataset.state = 'error';
+    message.textContent = error.code === 'DUPLICATE_CANDIDATE'
+      ? '이미 등록된 메뉴 이름이에요. 다른 이름을 입력해 주세요.'
+      : error.status ? `후보를 추가하지 못했어요. ${error.message}`
+        : '응답을 확인하지 못했어요. 저장됐을 수도 있으니 화면을 새로고침해 목록을 확인해 주세요.';
+  } finally {
+    addingCandidate = false;
+    ui['candidate-name'].disabled = false;
+    ui['candidate-add-button'].disabled = false;
+    ui['candidate-add-button'].textContent = '후보 추가';
+    ui['candidate-form'].setAttribute('aria-busy', 'false');
+    if (!ui['candidate-add-panel'].hidden) ui['candidate-name'].focus();
+  }
+});
 
 function rankingError() {
   ui['ranking-state'].hidden = false;
@@ -229,6 +300,8 @@ async function initialize() {
       : '집계가 완료되면 자동으로 갱신돼요. 연결이 끊기면 최신 결과로 다시 이어집니다.';
     candidates = await request('/api/candidates');
     renderCandidates();
+    ui['candidate-name'].disabled = false;
+    ui['candidate-add-button'].disabled = false;
     if (stopped) return;
     if (mode === 'polling') poll(); else subscribe();
   } catch {
