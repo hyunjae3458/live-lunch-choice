@@ -1,9 +1,10 @@
 package org.example.livelunchchoice.vote.messaging;
 
+import org.springframework.context.annotation.Profile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.example.livelunchchoice.vote.VoteService;
+import org.example.livelunchchoice.vote.VoteRealtimeService;
 import org.example.livelunchchoice.vote.event.VoteCreateEvent;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -11,8 +12,9 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile("realtime")
 public class VoteEventConsumer {
-    private final VoteService voteService;
+    private final VoteRealtimeService realtimeService;
 
     @KafkaListener(
             id = "vote-log-listener",
@@ -34,7 +36,7 @@ public class VoteEventConsumer {
                 record.offset()
         );
 
-        boolean aggregated = voteService.aggregate(event);
+        boolean aggregated = realtimeService.aggregate(event);
 
         if(!aggregated){
             log.info(

@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-@Profile("local")
+@Profile("local & realtime")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/local/kafka/consumer")

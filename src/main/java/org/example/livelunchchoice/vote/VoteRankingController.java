@@ -1,5 +1,6 @@
 package org.example.livelunchchoice.vote;
 
+import org.springframework.context.annotation.Profile;
 import lombok.RequiredArgsConstructor;
 import org.example.livelunchchoice.vote.dto.VoteResultResponse;
 import org.example.livelunchchoice.vote.sse.VoteRankingSseService;
@@ -16,13 +17,14 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/votes/rankings")
+@Profile("realtime")
 public class VoteRankingController {
-    private final VoteService voteService;
+    private final VoteRealtimeService realtimeService;
     private final VoteRankingSseService sseService;
 
     @GetMapping
     public ResponseEntity<List<VoteResultResponse>> rankings() {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(voteService.rankings());
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(realtimeService.rankings());
     }
 
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

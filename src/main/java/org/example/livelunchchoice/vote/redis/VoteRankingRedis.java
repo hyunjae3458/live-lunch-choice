@@ -1,5 +1,6 @@
 package org.example.livelunchchoice.vote.redis;
 
+import org.springframework.context.annotation.Profile;
 import lombok.RequiredArgsConstructor;
 import org.example.livelunchchoice.vote.dto.VoteResultResponse;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -13,6 +14,7 @@ import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
+@Profile("realtime")
 public class VoteRankingRedis {
     private static final String RANKING_KEY = "live-lunch-choice:ranking";
     private static final String PROCESSED_EVENTS_KEY = "live-lunch-choice:processed-events";

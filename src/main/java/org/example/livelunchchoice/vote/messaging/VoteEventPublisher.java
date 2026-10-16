@@ -1,5 +1,6 @@
 package org.example.livelunchchoice.vote.messaging;
 
+import org.springframework.context.annotation.Profile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.livelunchchoice.vote.event.VoteCreateEvent;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile("realtime")
 public class VoteEventPublisher {
     public static final String TOPIC = "vote-created";
 

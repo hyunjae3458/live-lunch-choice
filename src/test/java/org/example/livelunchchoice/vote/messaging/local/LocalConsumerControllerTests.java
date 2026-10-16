@@ -75,20 +75,16 @@ class LocalConsumerControllerTests {
         mvc.perform(get("/api/local/kafka/consumer")).andExpect(status().isNotFound());
     }
 
-    @Test
-    void controllerIsOnlyRegisteredInLocalProfile() {
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"", "local", "polling", "realtime", "local,polling", "local,realtime"})
+    void controllerRequiresLocalAndRealtime(String profiles) {
         try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
+            context.getEnvironment().setActiveProfiles(profiles.isEmpty() ? new String[0] : profiles.split(","));
             context.registerBean(KafkaListenerEndpointRegistry.class, () -> registry);
             context.register(LocalConsumerController.class);
             context.refresh();
-            assertThat(context.getBeansOfType(LocalConsumerController.class)).isEmpty();
-        }
-        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
-            context.getEnvironment().setActiveProfiles("local");
-            context.registerBean(KafkaListenerEndpointRegistry.class, () -> registry);
-            context.register(LocalConsumerController.class);
-            context.refresh();
-            assertThat(context.getBeansOfType(LocalConsumerController.class)).hasSize(1);
+            assertThat(context.getBeansOfType(LocalConsumerController.class))
+                    .hasSize(profiles.equals("local,realtime") ? 1 : 0);
         }
     }
 }

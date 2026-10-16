@@ -11,32 +11,3 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-  kafka:
-    bootstrap-servers: localhost:9092
-
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
-      acks: all
-      properties:
-        "[enable.idempotence]": true
-        "[delivery.timeout.ms]": 30000
-        "[request.timeout.ms]": 5000
-        "[retry.backoff.ms]": 500
-        "[retry.backoff.max.ms]": 1000
-        "[max.block.ms]": 3000
-
-    consumer:
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
-      auto-offset-reset: earliest
-      enable-auto-commit: false
-      properties:
-        "[spring.json.trusted.packages]": org.example.livelunchchoice.vote.event
-
-    listener:
-      ack-mode: record

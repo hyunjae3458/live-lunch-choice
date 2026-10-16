@@ -1,12 +1,10 @@
 package org.example.livelunchchoice.vote;
 
-import org.example.livelunchchoice.candidate.CandidateRepository;
 import org.example.livelunchchoice.vote.dto.VoteResultResponse;
 import org.example.livelunchchoice.vote.redis.VoteRankingRedis;
 import org.example.livelunchchoice.vote.redis.VoteRankingPublisher;
 import org.example.livelunchchoice.vote.sse.VoteRankingSseService;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -18,8 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class VoteRankingControllerTests {
     private final VoteRankingRedis redis = mock(VoteRankingRedis.class);
-    private final VoteService service = new VoteService(mock(VoteRepository.class),
-            mock(CandidateRepository.class), mock(ApplicationEventPublisher.class), redis, mock(VoteRankingPublisher.class));
+    private final VoteRealtimeService service = new VoteRealtimeService(redis, mock(VoteRankingPublisher.class));
     private final MockMvc mvc = MockMvcBuilders.standaloneSetup(
             new VoteRankingController(service, new VoteRankingSseService(service))).build();
 

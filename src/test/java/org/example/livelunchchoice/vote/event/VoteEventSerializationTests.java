@@ -15,10 +15,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class VoteEventSerializationTests {
     @Test
-    void mainYamlAllowsEventRoundTripWithTypeHeaders() {
+    void realtimeYamlAllowsEventRoundTripWithTypeHeaders() {
         // 테스트용 YAML이 아닌 실제 앱 설정의 경로와 허용 패키지를 확인한다.
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
-        yaml.setResources(new FileSystemResource("src/main/resources/application.yml"));
+        yaml.setResources(new FileSystemResource("src/main/resources/application-realtime.yml"));
         Properties properties = yaml.getObject();
         assertThat(properties.getProperty("spring.kafka.producer.value-serializer"))
                 .isEqualTo(JacksonJsonSerializer.class.getName());

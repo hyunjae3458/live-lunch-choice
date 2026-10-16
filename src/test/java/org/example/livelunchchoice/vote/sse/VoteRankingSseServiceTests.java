@@ -1,6 +1,6 @@
 package org.example.livelunchchoice.vote.sse;
 
-import org.example.livelunchchoice.vote.VoteService;
+import org.example.livelunchchoice.vote.VoteRealtimeService;
 import org.example.livelunchchoice.vote.dto.VoteResultResponse;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class VoteRankingSseServiceTests {
-    private final VoteService rankings = mock(VoteService.class);
+    private final VoteRealtimeService rankings = mock(VoteRealtimeService.class);
     private final VoteRankingSseService service = spy(new VoteRankingSseService(rankings));
 
     @Test

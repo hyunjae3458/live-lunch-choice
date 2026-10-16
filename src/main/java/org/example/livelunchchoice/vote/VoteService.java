@@ -10,8 +10,6 @@ import org.example.livelunchchoice.vote.dto.VoteRequest;
 import org.example.livelunchchoice.vote.dto.VoteResponse;
 import org.example.livelunchchoice.vote.dto.VoteResultResponse;
 import org.example.livelunchchoice.vote.exception.AlreadyVotedException;
-import org.example.livelunchchoice.vote.redis.VoteRankingRedis;
-import org.example.livelunchchoice.vote.redis.VoteRankingPublisher;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -26,10 +24,8 @@ public class VoteService {
     private final VoteRepository voteRepository;
     private final CandidateRepository candidateRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final VoteRankingRedis rankingRedis;
-    private final VoteRankingPublisher rankingPublisher;
 
-    // 투표 등록: DB에 저장하고 Spring 이벤트를 발행한다. Kafka 발행은 커밋 후 리스너가 담당한다.
+    // 투표 등록: DB 저장 후 Spring 이벤트 발행. realtime에서만 커밋 후 리스너가 Kafka로 전달한다.
     @Transactional
     public VoteResponse create(VoteRequest request) {
         Candidate candidate = candidateRepository.findById(request.candidateId())
@@ -76,17 +72,4 @@ public class VoteService {
                 .toList();
     }
 
-    // Redis 랭킹 조회: Sorted Set 순서를 그대로 반환하며 DB에 접근하지 않는다.
-    public List<VoteResultResponse> rankings() {
-        return rankingRedis.findAll();
-    }
-
-    // 이벤트 집계: Lua로 중복을 확인하고, 새로 집계한 이벤트만 Pub/Sub으로 알린다.
-    public boolean aggregate(VoteCreateEvent event) {
-        boolean aggregated = rankingRedis.incrementIfNotProcessed(event.eventId(), event.candidateId());
-        if (aggregated) {
-            rankingPublisher.publish(event.eventId());
-        }
-        return aggregated;
-    }
 }

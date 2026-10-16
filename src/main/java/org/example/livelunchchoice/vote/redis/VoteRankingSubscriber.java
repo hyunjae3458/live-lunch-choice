@@ -1,5 +1,6 @@
 package org.example.livelunchchoice.vote.redis;
 
+import org.springframework.context.annotation.Profile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.livelunchchoice.vote.sse.VoteRankingSseService;
@@ -12,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile("realtime")
 public class VoteRankingSubscriber implements MessageListener {
     private final VoteRankingSseService sseService;
 

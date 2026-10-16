@@ -43,7 +43,7 @@ import static org.mockito.Mockito.*;
 @Tag("redis")
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("ranking-e2e")
+@ActiveProfiles({"realtime", "ranking-e2e"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Import(VoteRankingSseIntegrationTests.EventCaptureConfig.class)
 class VoteRankingSseIntegrationTests {

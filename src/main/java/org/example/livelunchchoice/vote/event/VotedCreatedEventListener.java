@@ -1,5 +1,6 @@
 package org.example.livelunchchoice.vote.event;
 
+import org.springframework.context.annotation.Profile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.livelunchchoice.vote.messaging.VoteEventPublisher;
@@ -10,6 +11,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile("realtime")
 public class VotedCreatedEventListener {
     private final VoteEventPublisher voteEventPublisher;
 
