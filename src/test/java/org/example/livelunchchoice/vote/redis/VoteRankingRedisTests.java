@@ -1,6 +1,7 @@
 package org.example.livelunchchoice.vote.redis;
 
 import org.junit.jupiter.api.*;
+import org.example.livelunchchoice.vote.dto.VoteResultResponse;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.testcontainers.containers.GenericContainer;
@@ -39,6 +40,20 @@ class VoteRankingRedisTests {
     @AfterEach
     void cleanup() {
         if (connectionFactory != null) connectionFactory.destroy();
+    }
+
+    @Test
+    void rankingIsEmptyWithoutScores() {
+        assertThat(ranking.findAll()).isEmpty();
+    }
+
+    @Test
+    void rankingPreservesRedisScoreAndReverseLexicalTieOrder() {
+        template.opsForZSet().add(RANKING, "1", 4);
+        template.opsForZSet().add(RANKING, "2", 3);
+        template.opsForZSet().add(RANKING, "10", 3);
+        assertThat(ranking.findAll()).containsExactly(
+                new VoteResultResponse(1, 4), new VoteResultResponse(2, 3), new VoteResultResponse(10, 3));
     }
 
     @Test

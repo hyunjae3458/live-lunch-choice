@@ -1,9 +1,13 @@
 package org.example.livelunchchoice.vote.messaging;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.example.livelunchchoice.vote.VoteAggregationService;
+import org.example.livelunchchoice.vote.VoteService;
+import org.example.livelunchchoice.vote.VoteRepository;
+import org.example.livelunchchoice.candidate.CandidateRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.example.livelunchchoice.vote.event.VoteCreateEvent;
 import org.example.livelunchchoice.vote.redis.VoteRankingRedis;
+import org.example.livelunchchoice.vote.redis.VoteRankingPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.system.CapturedOutput;
@@ -17,7 +21,10 @@ import static org.mockito.Mockito.*;
 @ExtendWith(OutputCaptureExtension.class)
 class VoteEventConsumerTests {
     private final VoteRankingRedis redis = mock(VoteRankingRedis.class);
-    private final VoteEventConsumer consumer = new VoteEventConsumer(new VoteAggregationService(redis));
+    private final VoteRankingPublisher publisher = mock(VoteRankingPublisher.class);
+    private final VoteEventConsumer consumer = new VoteEventConsumer(new VoteService(
+            mock(VoteRepository.class), mock(CandidateRepository.class),
+            mock(ApplicationEventPublisher.class), redis, publisher));
     private final VoteCreateEvent event = new VoteCreateEvent("event-1", 10L, 2L, Instant.now());
     private final ConsumerRecord<String, VoteCreateEvent> record =
             new ConsumerRecord<>("vote-created", 0, 12L, "10", event);
@@ -27,6 +34,7 @@ class VoteEventConsumerTests {
         when(redis.incrementIfNotProcessed("event-1", 2L)).thenReturn(true);
         consumer.consume(record);
         verify(redis).incrementIfNotProcessed("event-1", 2L);
+        verify(publisher).publish("event-1");
         assertThat(output.getOut()).contains("VOTE_AGGREGATED eventId=event-1")
                 .doesNotContain("VOTE_DUPLICATE_SKIPPED");
     }
@@ -36,6 +44,7 @@ class VoteEventConsumerTests {
         when(redis.incrementIfNotProcessed("event-1", 2L)).thenReturn(false);
         assertThatCode(() -> consumer.consume(record)).doesNotThrowAnyException();
         verify(redis, times(1)).incrementIfNotProcessed("event-1", 2L);
+        verifyNoInteractions(publisher);
         assertThat(output.getOut()).contains("VOTE_DUPLICATE_SKIPPED eventId=event-1")
                 .doesNotContain("VOTE_AGGREGATED");
     }
@@ -45,6 +54,7 @@ class VoteEventConsumerTests {
         RuntimeException failure = new IllegalStateException("Redis unavailable");
         when(redis.incrementIfNotProcessed("event-1", 2L)).thenThrow(failure);
         assertThatThrownBy(() -> consumer.consume(record)).isSameAs(failure);
+        verifyNoInteractions(publisher);
         assertThat(output.getOut()).doesNotContain("VOTE_AGGREGATED", "VOTE_DUPLICATE_SKIPPED");
     }
 }

@@ -1,0 +1,23 @@
+server:
+  shutdown: immediate
+app:
+  ranking:
+    subscription-enabled: true
+spring:
+  kafka:
+    admin:
+      auto-create: true
+    listener:
+      auto-startup: true
+      ack-mode: record
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+      acks: all
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        "[spring.json.trusted.packages]": org.example.livelunchchoice.vote.event
