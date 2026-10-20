@@ -36,9 +36,14 @@ out/
 ### VS Code ###
 .vscode/
 
-### Local Markdown documents (except README) ###
+### Local environment and Markdown visibility ###
 .env
 .env.*
 !.env.example
 *.[mM][dD]
 ![rR][eE][aA][dD][mM][eE].[mM][dD]
+
+# Public guides and portable development/agent history
+!/docs/**/*.md
+!/dev-notes/**/*.md
+!/AGENTS.md
