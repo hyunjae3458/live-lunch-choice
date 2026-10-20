@@ -13,7 +13,8 @@ public class ProcessingModeController {
 
     public ProcessingModeController(Environment environment) {
         // ProcessingModeConfig가 시작 시 정확히 한 모드만 허용한다.
-        this.mode = environment.acceptsProfiles(Profiles.of("realtime")) ? "realtime" : "polling";
+        this.mode = environment.acceptsProfiles(Profiles.of("realtime")) ? "realtime"
+                : environment.acceptsProfiles(Profiles.of("db-sse")) ? "db-sse" : "polling";
     }
 
     @GetMapping("/api/mode")

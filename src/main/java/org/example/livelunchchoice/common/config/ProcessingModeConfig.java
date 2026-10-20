@@ -13,8 +13,9 @@ public class ProcessingModeConfig {
         return beanFactory -> {
             boolean polling = environment.acceptsProfiles(Profiles.of("polling"));
             boolean realtime = environment.acceptsProfiles(Profiles.of("realtime"));
-            if (polling == realtime) {
-                throw new IllegalStateException("polling 또는 realtime 프로필 중 정확히 하나를 활성화하세요.");
+            boolean dbSse = environment.acceptsProfiles(Profiles.of("db-sse"));
+            if ((polling ? 1 : 0) + (realtime ? 1 : 0) + (dbSse ? 1 : 0) != 1) {
+                throw new IllegalStateException("polling, realtime, db-sse 프로필 중 정확히 하나를 활성화하세요.");
             }
         };
     }

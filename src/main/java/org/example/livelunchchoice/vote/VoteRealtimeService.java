@@ -1,5 +1,6 @@
 package org.example.livelunchchoice.vote;
 
+
 import lombok.RequiredArgsConstructor;
 import org.example.livelunchchoice.vote.dto.VoteResultResponse;
 import org.example.livelunchchoice.vote.event.VoteCreateEvent;
@@ -12,7 +13,7 @@ import java.util.List;
 @Service
 @Profile("realtime")
 @RequiredArgsConstructor
-public class VoteRealtimeService {
+public class VoteRealtimeService implements RankingSource {
     private final VoteRankingRedis rankingRedis;
     private final VoteRankingPublisher rankingPublisher;
 

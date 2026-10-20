@@ -25,7 +25,7 @@ public class VoteService {
     private final CandidateRepository candidateRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    // 투표 등록: DB 저장 후 Spring 이벤트 발행. realtime에서만 커밋 후 리스너가 Kafka로 전달한다.
+    // 투표 등록: DB 저장 후 Spring 이벤트 발행. 모드별 커밋 후 리스너가 알림 처리를 맡는다.
     @Transactional
     public VoteResponse create(VoteRequest request) {
         Candidate candidate = candidateRepository.findById(request.candidateId())

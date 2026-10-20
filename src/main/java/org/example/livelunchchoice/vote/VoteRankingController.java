@@ -17,14 +17,14 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/votes/rankings")
-@Profile("realtime")
+@Profile({"realtime", "db-sse"})
 public class VoteRankingController {
-    private final VoteRealtimeService realtimeService;
+    private final RankingSource rankingSource;
     private final VoteRankingSseService sseService;
 
     @GetMapping
     public ResponseEntity<List<VoteResultResponse>> rankings() {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(realtimeService.rankings());
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(rankingSource.rankings());
     }
 
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

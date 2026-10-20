@@ -2,7 +2,7 @@ package org.example.livelunchchoice.vote.sse;
 
 import org.springframework.context.annotation.Profile;
 import lombok.RequiredArgsConstructor;
-import org.example.livelunchchoice.vote.VoteRealtimeService;
+import org.example.livelunchchoice.vote.RankingSource;
 import org.example.livelunchchoice.vote.dto.VoteResultResponse;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -15,9 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
-@Profile("realtime")
+@Profile({"realtime", "db-sse"})
 public class VoteRankingSseService {
-    private final VoteRealtimeService realtimeService;
+    private final RankingSource rankingSource;
     private final Set<SseEmitter> emitters = ConcurrentHashMap.newKeySet();
 
     // 조회부터 전송까지 같은 잠금으로 직렬화하여 오래된 초기 응답이 변경 응답 뒤에 가지 않게 한다.
@@ -31,7 +31,7 @@ public class VoteRankingSseService {
         emitter.onError(error -> emitters.remove(emitter));
         emitters.add(emitter);
         try {
-            send(emitter, realtimeService.rankings());
+            send(emitter, rankingSource.rankings());
             return emitter;
         } catch (RuntimeException exception) {
             emitters.remove(emitter);
@@ -41,7 +41,7 @@ public class VoteRankingSseService {
     }
 
     public synchronized void broadcast() {
-        List<VoteResultResponse> rankings = realtimeService.rankings();
+        List<VoteResultResponse> rankings = rankingSource.rankings();
         for (SseEmitter emitter : emitters) {
             send(emitter, rankings);
         }
